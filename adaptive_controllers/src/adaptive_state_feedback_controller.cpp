@@ -65,7 +65,7 @@ controller_interface::CallbackReturn AdaptiveStateFeedbackController::on_deactiv
 
 InterfaceConfiguration AdaptiveStateFeedbackController::command_interface_configuration() const {
   InterfaceConfiguration cfg;
-  cfg.type = InterfaceConfiguration::INDIVIDUAL;
+  cfg.type = controller_interface::interface_configuration_type::INDIVIDUAL;
   cfg.names.reserve(dof_);
   for (size_t i = 0; i < dof_; ++i) cfg.names.push_back("joint" + std::to_string(i) + "/" + HW_IF_EFFORT);
   return cfg;
