@@ -13,9 +13,16 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-colcon-common-extensions
+          sudo apt-get install -y \
+            python3-colcon-common-extensions \
+            ros-humble-ros2-control \
+            ros-humble-ros2-controllers \
+            ros-humble-realtime-tools \
+            ros-humble-pluginlib \
+            ros-humble-hardware-interface
           rosdep update || true
           rosdep install --from-paths . --ignore-src -r -y || true
+
       - name: Build
         run: |
           source /opt/ros/humble/setup.bash
