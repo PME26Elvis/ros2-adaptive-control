@@ -3,7 +3,6 @@
 #include <controller_interface/controller_interface.hpp>
 #include <hardware_interface/loaned_command_interface.hpp>
 #include <pluginlib/class_loader.hpp>
-#include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <realtime_tools/realtime_buffer.h>
 #include <Eigen/Dense>
@@ -33,15 +32,15 @@ private:
   Eigen::MatrixXd A_, B_, C_, K_;
   Eigen::VectorXd x_, u_, y_, r_;
 
-  // pluginlib loaders and instances
-  std::shared_ptr<pluginlib::ClassLoader<ObserverBase>> observer_loader_;
-  std::shared_ptr<pluginlib::ClassLoader<AdaptiveLawBase>> adapt_loader_;
-  pluginlib::UniquePtr<ObserverBase> observer_;
-  pluginlib::UniquePtr<AdaptiveLawBase> adapt_;
-
+  // Plugins (only created if enable_plugins_ == true)
+  bool enable_plugins_{false};
   std::string observer_type_;
   std::string adaptive_type_;
   std::size_t dof_{1};
+
+  // plugin instances (created lazily when enabled)
+  pluginlib::UniquePtr<ObserverBase> observer_;
+  pluginlib::UniquePtr<AdaptiveLawBase> adapt_;
 };
 
 }  // namespace adaptive_controllers
