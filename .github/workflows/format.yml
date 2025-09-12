@@ -1,13 +1,20 @@
 name: Format
 on:
-  pull_request:
-  push:
+  push
+  # 如需在 PR 也自動排版並回推，打開下一行
+  # pull_request
+
+permissions:
+  contents: write        # 允許自動 commit 回 repo
+  pull-requests: write
 
 jobs:
   ament_uncrustify:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: ros-tooling/setup-ros@v0.7
         with:
@@ -18,24 +25,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ros-humble-ament-uncrustify uncrustify
 
-      - name: Locate ament_uncrustify config
+      - name: Locate ament_uncrustify config (optional)
         id: cfg
         run: |
           set -e
           source /opt/ros/humble/setup.bash
           PREFIX="$(ros2 pkg prefix ament_uncrustify)"
           CANDIDATE="$PREFIX/share/ament_uncrustify/configuration/ament_code_style.cfg"
-          echo "Trying: $CANDIDATE"
           if [ -f "$CANDIDATE" ]; then
             echo "cfg=$CANDIDATE" >> $GITHUB_OUTPUT
           else
-            echo "::warning::Default cfg not found, listing dir for debug:"
-            ls -la "$PREFIX/share/ament_uncrustify/configuration" || true
-            # 後備：沒有就改用 ament_uncrustify 的預設（不指定 -c）
+            echo "::notice::Using ament_uncrustify default config (no -c)."
             echo "cfg=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check formatting (reformat then diff)
+      - name: Reformat in-place (no diff, no failure)
         run: |
           set -e
           source /opt/ros/humble/setup.bash
@@ -48,7 +52,13 @@ jobs:
           if [ -n "$CFG" ]; then
             ament_uncrustify -c "$CFG" --reformat $FILES
           else
-            echo "::notice::Using ament_uncrustify default config (no -c)."
             ament_uncrustify --reformat $FILES
           fi
-          git diff --exit-code
+
+      - name: Commit changes if any
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style(uncrustify): auto-format [skip ci]"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          branch: ${{ github.ref_name }}
