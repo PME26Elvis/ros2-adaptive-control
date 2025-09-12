@@ -15,3 +15,5 @@ void MRACLaw::update(const VectorXd& xhat, const VectorXd& r, VectorXd& u_adapt)
   u_adapt[0] = theta_[0]*e;
 }
 }  // namespace adaptive_controllers
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(adaptive_controllers::MRACLaw, adaptive_controllers::AdaptiveLawBase)
