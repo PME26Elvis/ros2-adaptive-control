@@ -1,0 +1,24 @@
+name: Format
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  ament_uncrustify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+      - name: Install ament_uncrustify
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ros-humble-ament-uncrustify
+      - name: Check formatting
+        run: |
+          source /opt/ros/humble/setup.bash
+          ament_uncrustify --config-package ament_uncrustify --reformat .
+          # 如果有格式差異就失敗，並顯示 diff
+          git diff --exit-code
