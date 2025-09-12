@@ -1,6 +1,8 @@
+// Copyright 2025 
 #include "adaptive_controllers/adaptive_state_feedback_controller.hpp"
 
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
+#include <pluginlib/class_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
 
 using controller_interface::InterfaceConfiguration;
@@ -13,11 +15,7 @@ using hardware_interface::HW_IF_VELOCITY;
 namespace adaptive_controllers {
 
 controller_interface::CallbackReturn AdaptiveStateFeedbackController::on_init() {
-  // Create loaders for our plugin interfaces
-  observer_loader_ = std::make_shared<pluginlib::ClassLoader<ObserverBase>>(
-      "adaptive_controllers", "adaptive_controllers::ObserverBase");
-  adapt_loader_ = std::make_shared<pluginlib::ClassLoader<AdaptiveLawBase>>(
-      "adaptive_controllers", "adaptive_controllers::AdaptiveLawBase");
+  // 不在 on_init 建立 ClassLoader，避免 build 空間無 ament 索引時丟例外
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -25,16 +23,19 @@ controller_interface::CallbackReturn
 AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
   auto node = get_node();
 
-  // NOTE: Use int to avoid ParameterValue(unsigned long) ambiguity on Humble
+  // 參數：為了避免 ParameterValue(unsigned long) 歧義，用 int
   node->declare_parameter<int>("dof", 1);
   node->declare_parameter<std::string>("observer_type", "adaptive_controllers/LuenbergerObserver");
   node->declare_parameter<std::string>("adaptive_type", "adaptive_controllers/MRACLaw");
+  // 關鍵：預設不載入 plugin，測試環境不觸發 pluginlib
+  node->declare_parameter<bool>("enable_plugins", false);
 
   const int dof_param = node->get_parameter("dof").as_int();
   dof_ = dof_param > 0 ? static_cast<std::size_t>(dof_param) : 1;
 
   observer_type_ = node->get_parameter("observer_type").as_string();
   adaptive_type_ = node->get_parameter("adaptive_type").as_string();
+  enable_plugins_ = node->get_parameter("enable_plugins").as_bool();
 
   // Minimal placeholders
   A_.setZero(dof_, dof_);
@@ -48,31 +49,39 @@ AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
 
   observer_.reset();
   adapt_.reset();
-  try {
-    observer_ = observer_loader_->createUniqueInstance(observer_type_);
-  } catch (const std::exception& e) {
-    RCLCPP_WARN(node->get_logger(), "Observer plugin load failed: %s", e.what());
-  } catch (...) {
-    RCLCPP_WARN(node->get_logger(), "Observer plugin load failed (unknown).");
-  }
 
-  try {
-    adapt_ = adapt_loader_->createUniqueInstance(adaptive_type_);
-  } catch (const std::exception& e) {
-    RCLCPP_WARN(node->get_logger(), "Adaptive law plugin load failed: %s", e.what());
-  } catch (...) {
-    RCLCPP_WARN(node->get_logger(), "Adaptive law plugin load failed (unknown).");
-  }
+  if (enable_plugins_) {
+    // 只有在 enable_plugins_=true 才嘗試載入，避免在 build 空間找不到套件而丟例外
+    try {
+      pluginlib::ClassLoader<ObserverBase> observer_loader(
+          "adaptive_controllers", "adaptive_controllers::ObserverBase");
+      observer_ = observer_loader.createUniqueInstance(observer_type_);
+    } catch (const std::exception& e) {
+      RCLCPP_WARN(node->get_logger(), "Observer plugin load failed: %s", e.what());
+    } catch (...) {
+      RCLCPP_WARN(node->get_logger(), "Observer plugin load failed (unknown).");
+    }
 
-  if (observer_) {
-    ObserverParams p;
-    observer_->configure(p);
-    observer_->reset();
-  }
-  if (adapt_) {
-    AdaptiveLawParams p;
-    adapt_->configure(p);
-    adapt_->reset();
+    try {
+      pluginlib::ClassLoader<AdaptiveLawBase> adapt_loader(
+          "adaptive_controllers", "adaptive_controllers::AdaptiveLawBase");
+      adapt_ = adapt_loader.createUniqueInstance(adaptive_type_);
+    } catch (const std::exception& e) {
+      RCLCPP_WARN(node->get_logger(), "Adaptive law plugin load failed: %s", e.what());
+    } catch (...) {
+      RCLCPP_WARN(node->get_logger(), "Adaptive law plugin load failed (unknown).");
+    }
+
+    if (observer_) {
+      ObserverParams p;
+      observer_->configure(p);
+      observer_->reset();
+    }
+    if (adapt_) {
+      AdaptiveLawParams p;
+      adapt_->configure(p);
+      adapt_->reset();
+    }
   }
 
   return controller_interface::CallbackReturn::SUCCESS;
@@ -130,10 +139,10 @@ return_type AdaptiveStateFeedbackController::update(const rclcpp::Time&, const r
   }
 
   Eigen::VectorXd xhat = x_;
-  if (observer_) observer_->estimate(x_, u_, y_, xhat);
+  if (enable_plugins_ && observer_) observer_->estimate(x_, u_, y_, xhat);
 
   Eigen::VectorXd u_adapt = Eigen::VectorXd::Zero(dof_);
-  if (adapt_) adapt_->update(xhat, r_, u_adapt);
+  if (enable_plugins_ && adapt_) adapt_->update(xhat, r_, u_adapt);
 
   u_ = -K_ * xhat + u_adapt;
 
