@@ -1,0 +1,20 @@
+{
+  "name": "ros2-adaptive-control",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-iot.vscode-ros",
+        "twxs.cmake",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools",
+        "xaver.clang-format"
+      ]
+    }
+  },
+  "features": {},
+  "postCreateCommand": "bash -lc 'source /opt/ros/humble/setup.bash && rosdep update || true'"
+}
