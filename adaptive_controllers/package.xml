@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>adaptive_controllers</name>
+  <version>0.1.0</version>
+  <description>ROS 2 adaptive control plugin for ros2_control.</description>
+  <license>Apache-2.0</license>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>pluginlib</depend>
+  <depend>controller_interface</depend>
+  <depend>hardware_interface</depend>
+  <depend>realtime_tools</depend>
+  <depend>rcutils</depend>
+  <depend>eigen3_cmake_module</depend>
+  <exec_depend>ament_index_cpp</exec_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>gtest</test_depend>
+  <export>
+    <pluginlib plugin_manifest="plugin_description.xml"/>
+  </export>
+</package>

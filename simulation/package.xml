@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>adaptive_simulation</name>
+  <version>0.1.0</version>
+  <description>Gazebo simulation assets for adaptive controllers.</description>
+  <license>Apache-2.0</license>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>gazebo_ros_pkgs</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <export/>
+</package>

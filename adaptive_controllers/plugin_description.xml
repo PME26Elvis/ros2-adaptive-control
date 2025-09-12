@@ -1,0 +1,8 @@
+<library path="libadaptive_controllers">
+  <class
+    name="adaptive_controllers/AdaptiveStateFeedbackController"
+    type="adaptive_controllers::AdaptiveStateFeedbackController"
+    base_class_type="controller_interface::ControllerInterface">
+    <description>Adaptive state feedback controller with pluggable observers and adaptive laws.</description>
+  </class>
+</library>

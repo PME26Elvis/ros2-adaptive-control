@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>adaptive_bringup</name>
+  <version>0.1.0</version>
+  <description>Bringup and example configs for adaptive controllers.</description>
+  <license>Apache-2.0</license>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>adaptive_controllers</exec_depend>
+  <export/>
+</package>

@@ -1,0 +1,8 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    adaptive_controller:
+      type: adaptive_controllers/AdaptiveStateFeedbackController
+      dof: 1
+      observer_type: adaptive_controllers/LuenbergerObserver
+      adaptive_type: adaptive_controllers/MRACLaw
