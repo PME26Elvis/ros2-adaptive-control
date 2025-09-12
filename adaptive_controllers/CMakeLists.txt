@@ -26,11 +26,10 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp pluginlib controller_interface hardware_interface realtime_tools rcutils
 )
 
+# export controller plugin
 pluginlib_export_plugin_description_file(controller_interface plugin_description.xml)
+# export observer/adaptive-law plugins
 pluginlib_export_plugin_description_file(adaptive_controllers observer_plugins.xml)
-
-install(FILES observer_plugins.xml
-  DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
@@ -39,7 +38,9 @@ install(TARGETS ${PROJECT_NAME}
 
 install(DIRECTORY include/ DESTINATION include)
 
-install(FILES plugin_description.xml
+install(FILES
+  plugin_description.xml
+  observer_plugins.xml
   DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY resource
@@ -47,8 +48,12 @@ install(DIRECTORY resource
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+
+  # 🔴 關鍵：把 ament_uncrustify 從自動 lint 中排除（由獨立的 Format workflow 處理）
   set(AMENT_LINT_AUTO_EXCLUDE "ament_uncrustify")
+
   ament_lint_auto_find_test_dependencies()
+
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_compile tests/test_compile.cpp)
   target_link_libraries(test_compile ${PROJECT_NAME})
