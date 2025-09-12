@@ -27,6 +27,10 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 pluginlib_export_plugin_description_file(controller_interface plugin_description.xml)
+pluginlib_export_plugin_description_file(adaptive_controllers observer_plugins.xml)
+
+install(FILES observer_plugins.xml
+  DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
