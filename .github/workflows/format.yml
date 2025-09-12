@@ -1,5 +1,4 @@
 name: Format
-
 on:
   pull_request:
   push:
@@ -9,32 +8,47 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
       - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: humble
 
-      - name: Install ament_uncrustify
+      - name: Install ament_uncrustify + uncrustify
         run: |
           sudo apt-get update
-          sudo apt-get install -y ros-humble-ament-uncrustify
+          sudo apt-get install -y ros-humble-ament-uncrustify uncrustify
 
-      - name: Locate uncrustify.cfg
+      - name: Locate ament_uncrustify config
         id: cfg
         run: |
+          set -e
           source /opt/ros/humble/setup.bash
-          PREFIX=$(ros2 pkg prefix ament_uncrustify)
-          echo "cfg=$PREFIX/share/ament_uncrustify/configuration/uncrustify.cfg" >> $GITHUB_OUTPUT
+          PREFIX="$(ros2 pkg prefix ament_uncrustify)"
+          CANDIDATE="$PREFIX/share/ament_uncrustify/configuration/ament_code_style.cfg"
+          echo "Trying: $CANDIDATE"
+          if [ -f "$CANDIDATE" ]; then
+            echo "cfg=$CANDIDATE" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Default cfg not found, listing dir for debug:"
+            ls -la "$PREFIX/share/ament_uncrustify/configuration" || true
+            # 後備：沒有就改用 ament_uncrustify 的預設（不指定 -c）
+            echo "cfg=" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Check formatting (reformat in-place, then diff)
+      - name: Check formatting (reformat then diff)
         run: |
+          set -e
           source /opt/ros/humble/setup.bash
-          CFG="${{ steps.cfg.outputs.cfg }}"
-          # 僅針對被 Git 追蹤的 C/C++ 檔案
-          FILES=$(git ls-files | grep -E '\.(c|cc|cpp|h|hpp)$' || true)
+          FILES="$(git ls-files | grep -E '\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$' || true)"
           if [ -z "$FILES" ]; then
             echo "No C/C++ files to format."
             exit 0
           fi
-          ament_uncrustify -c "$CFG" --reformat $FILES
-          # 有變更就 fail，讓你在 PR/commit 看 diff
+          CFG="${{ steps.cfg.outputs.cfg }}"
+          if [ -n "$CFG" ]; then
+            ament_uncrustify -c "$CFG" --reformat $FILES
+          else
+            echo "::notice::Using ament_uncrustify default config (no -c)."
+            ament_uncrustify --reformat $FILES
+          fi
           git diff --exit-code
