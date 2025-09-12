@@ -1,0 +1,13 @@
+<library path="libadaptive_controllers">
+  <class name="adaptive_controllers/LuenbergerObserver"
+         type="adaptive_controllers::LuenbergerObserver"
+         base_class_type="adaptive_controllers::ObserverBase">
+    <description>Luenberger state observer.</description>
+  </class>
+
+  <class name="adaptive_controllers/MRACLaw"
+         type="adaptive_controllers::MRACLaw"
+         base_class_type="adaptive_controllers::AdaptiveLawBase">
+    <description>Model Reference Adaptive Control law.</description>
+  </class>
+</library>
