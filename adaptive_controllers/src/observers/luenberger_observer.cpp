@@ -16,3 +16,5 @@ void LuenbergerObserver::estimate(const VectorXd& x, const VectorXd& u, const Ve
   xhat = xhat_;
 }
 }  // namespace adaptive_controllers
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(adaptive_controllers::LuenbergerObserver, adaptive_controllers::ObserverBase)
