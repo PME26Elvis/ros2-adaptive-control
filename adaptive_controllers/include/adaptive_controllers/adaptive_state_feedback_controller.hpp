@@ -26,10 +26,10 @@ class AdaptiveStateFeedbackController : public controller_interface::ControllerI
   Eigen::MatrixXd A_, B_, C_, K_;
   Eigen::VectorXd x_, u_, y_, r_;
 
-  std::unique_ptr<pluginlib::ClassLoader<ObserverBase>> observer_loader_;
-  std::unique_ptr<pluginlib::ClassLoader<AdaptiveLawBase>> adapt_loader_;
-  std::unique_ptr<ObserverBase> observer_;
-  std::unique_ptr<AdaptiveLawBase> adapt_;
+  std::shared_ptr<pluginlib::ClassLoader<ObserverBase>> observer_loader_;
+  std::shared_ptr<pluginlib::ClassLoader<AdaptiveLawBase>> adapt_loader_;
+  pluginlib::UniquePtr<ObserverBase> observer_;
+  pluginlib::UniquePtr<AdaptiveLawBase> adapt_;
 
   std::string observer_type_;
   std::string adaptive_type_;
