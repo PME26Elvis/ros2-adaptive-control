@@ -1,4 +1,4 @@
-// Copyright 2025 An Lee
+// Copyright 2025 
 #include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
 #include "adaptive_controllers/adaptive_state_feedback_controller.hpp"
