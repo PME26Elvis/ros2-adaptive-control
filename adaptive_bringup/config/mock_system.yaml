@@ -1,0 +1,24 @@
+# ros2_control 的 mock hardware（GenericSystem）—— 只為了示範 bringup
+# 需系統側有 ros-humble-ros2-control 安裝 mock_components
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    adaptive_controller:
+      type: adaptive_controllers/AdaptiveStateFeedbackController
+      dof: 1
+      observer_type: adaptive_controllers/LuenbergerObserver
+      adaptive_type: adaptive_controllers/MRACLaw
+
+ros2_control:
+  ros__parameters:
+    robot_description: |
+      <robot name="mock">
+      </robot>
+    # 這段配置依 mock_components 版本可能略有差異；僅作示意
+    hardware:
+      - name: mock_system
+        type: mock_components/GenericSystem
+        parameters:
+          joints:
+            - joint0
