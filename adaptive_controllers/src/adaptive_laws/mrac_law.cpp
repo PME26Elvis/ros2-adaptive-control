@@ -1,6 +1,6 @@
 // Copyright 2025
 #include "adaptive_controllers/adaptive_laws/mrac_law.hpp"
-#incldue <algorithm>
+#include <algorithm>
 namespace adaptive_controllers {
 
 void MRACLaw::configure(const AdaptiveLawParams& p) {
