@@ -1,0 +1,46 @@
+# 這是一個最小的 ros2_control mock 硬體配置，可在純雲端/headless 起來
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    adaptive_controller:
+      type: adaptive_controllers/AdaptiveStateFeedbackController
+
+      # 關節設定
+      dof: 2
+      joints: [joint0, joint1]
+
+      # 打開自適應（可切 MRAC / L1）
+      enable_plugins: true
+      adaptive_type: adaptive_controllers/MRACLaw
+      # adaptive_type: adaptive_controllers/L1Law
+
+      # 不給 A/B/C/K 會自動用二階 canonical；先用上下限和初始參考
+      u_min: [-20.0, -20.0]
+      u_max: [ 20.0,  20.0]
+      r0: [0.0, 0.0]
+
+      # MRAC/L1 參數
+      mrac.gamma: 5.0
+      mrac.sigma: 0.02
+      mrac.theta_max: 50.0
+      l1.alpha: 20.0
+
+ros2_control:
+  ros__parameters:
+    # 使用 mock_components/GenericSystem，兩個關節，提供 position/velocity 狀態與 effort 指令
+    # （此 plugin 為 ros2_control 的模擬硬體，Humble 預設套件通常有安裝）
+    # 若你環境沒有，改用你自己的 mock robot 亦可
+    joints:
+      - joint0
+      - joint1
+
+    # 以下兩段是 ros2_control 的一般寫法（不同版本/套件可能細節不同）
+    # 若你測到 bringup 報 plugin 找不到，先檢查是否有安裝 ros-humble-ros2-control
+    hardware:
+      - name: mock_system
+        type: mock_components/GenericSystem
+        parameters:
+          # 回傳 state：pos/vel，接受 command：effort
+          # GenericSystem 會自動提供/對應標準介面
+          example_param: 1.0
