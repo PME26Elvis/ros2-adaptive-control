@@ -1,7 +1,7 @@
 name: Format
 on:
   push
-  # 要在 PR 也自動排版就解除下一行註解
+  # 如需在 PR 也自動排版，解除註解：
   # pull_request
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
             echo "cfg=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Reformat in-place (no diff, never fail here)
+      - name: Reformat in-place (no diff; never fail)
         run: |
           set -e
           source /opt/ros/humble/setup.bash
