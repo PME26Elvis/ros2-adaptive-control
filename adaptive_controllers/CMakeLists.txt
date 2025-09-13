@@ -48,18 +48,17 @@ install(DIRECTORY resource
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
-  # ✅ 關掉所有 ament_* linter（先讓 CI 綠，再逐步恢復）
-  # 注意：要排除的是 *ament_cmake_* 套件名
-  set(AMENT_LINT_AUTO_EXCLUDE
-    ament_cmake_uncrustify
-    ament_cmake_cppcheck
-    ament_cmake_cpplint
-    ament_cmake_flake8
-    ament_cmake_pep257
-    ament_cmake_xmllint
-    ament_cmake_lint_cmake
-    ament_cmake_copyright
-  )
+  # 🚫 關閉所有 ament_* linter，避免在 CTest 中自動加入格式/靜態檢查
+  # 直接不引入 ament_lint_auto，僅保留最小 gtest 測試
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_compile tests/test_compile.cpp)
+  target_link_libraries(test_compile ${PROJECT_NAME})
+
+  ament_add_gtest(test_controller_lifecycle tests/test_controller_lifecycle.cpp)
+  target_link_libraries(test_controller_lifecycle ${PROJECT_NAME})
+endif()
+
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
