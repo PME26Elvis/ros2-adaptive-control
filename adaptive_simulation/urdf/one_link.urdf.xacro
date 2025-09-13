@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot name="one_link" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- base_link 固定在世界，link1 由一個 revolute 關節連接，努力控制 -->
+  <link name="base_link">
+    <inertial><origin xyz="0 0 0" rpy="0 0 0"/><mass value="1"/><inertia ixx="1" iyy="1" izz="1" ixy="0" ixz="0" iyz="0"/></inertial>
+    <visual><geometry><box size="0.1 0.1 0.02"/></geometry></visual>
+    <collision><geometry><box size="0.1 0.1 0.02"/></geometry></collision>
+  </link>
+
+  <link name="link1">
+    <inertial><origin xyz="0 0 0.25" rpy="0 0 0"/><mass value="1.0"/>
+      <inertia ixx="0.02" iyy="0.02" izz="0.02" ixy="0" ixz="0" iyz="0"/></inertial>
+    <visual><origin xyz="0 0 0.25"/><geometry><box size="0.05 0.05 0.5"/></geometry></visual>
+    <collision><origin xyz="0 0 0.25"/><geometry><box size="0.05 0.05 0.5"/></geometry></collision>
+  </link>
+
+  <joint name="joint0" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0.01" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="50" lower="-3.1416" upper="3.1416" velocity="10"/>
+    <dynamics damping="0.1" friction="0.0"/>
+  </joint>
+
+  <!-- ros2_control 介面宣告（Gazebo Classic 需要） -->
+  <transmission name="joint0_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint0">
+      <hardwareInterface>hardware_interface/effort</hardwareInterface>
+    </joint>
+    <actuator name="joint0_motor">
+      <hardwareInterface>hardware_interface/effort</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- gazebo_ros2_control plugin 掛在 robot 根節點 -->
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so"/>
+  </gazebo>
+</robot>
