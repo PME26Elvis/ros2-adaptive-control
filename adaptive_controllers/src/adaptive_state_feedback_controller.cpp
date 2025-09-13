@@ -135,7 +135,7 @@ AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
     } catch (...) {
       RCLCPP_WARN(node->get_logger(), "Observer plugin load failed (unknown).");
     }
-
+  
     try {
       pluginlib::ClassLoader<AdaptiveLawBase> adapt_loader(
         "adaptive_controllers", "adaptive_controllers::AdaptiveLawBase");
@@ -145,10 +145,28 @@ AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
     } catch (...) {
       RCLCPP_WARN(node->get_logger(), "Adaptive law plugin load failed (unknown).");
     }
-
+  
     if (observer_) { ObserverParams p; observer_->configure(p); observer_->reset(); }
-    if (adapt_)    { AdaptiveLawParams p; adapt_->configure(p);    adapt_->reset(); }
+    if (adapt_) {
+      AdaptiveLawParams p;
+      p.dof = dof_;
+      // 從 YAML 注入 MRAC/L1 共同參數
+      node->declare_parameter<double>("mrac.gamma", 5.0);
+      node->declare_parameter<double>("mrac.sigma", 0.01);
+      node->declare_parameter<double>("mrac.theta_max", 50.0);
+      node->declare_parameter<double>("l1.alpha", 20.0);  // L1 濾波強度（需要時）
+  
+      // 通用：先用 MRAC 命名空間讀，L1 若被選用也會覆蓋其專屬參數
+      p.gamma     = node->get_parameter("mrac.gamma").as_double();
+      p.sigma     = node->get_parameter("mrac.sigma").as_double();
+      p.theta_max = node->get_parameter("mrac.theta_max").as_double();
+      p.l1_alpha  = node->get_parameter("l1.alpha").as_double();
+  
+      adapt_->configure(p);
+      adapt_->reset();
+    }
   }
+
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
