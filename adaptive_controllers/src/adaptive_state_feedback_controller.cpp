@@ -168,7 +168,10 @@ void AdaptiveStateFeedbackController::setup_reference_subscription(
 
 void AdaptiveStateFeedbackController::setup_debug_publisher(
     const rclcpp_lifecycle::LifecycleNode::SharedPtr& node) {
-  dbg_pub_.reset(new realtime_tools::RealtimePublisher<DebugMsg>(node, "~/debug", 10));
+  // 先建一般 publisher
+  auto base_pub = node->create_publisher<DebugMsg>("~/debug", rclcpp::SystemDefaultsQoS());
+  // 再把它包進 RealtimePublisher
+  dbg_pub_ = std::make_shared<realtime_tools::RealtimePublisher<DebugMsg>>(base_pub);
 }
 
 controller_interface::CallbackReturn
