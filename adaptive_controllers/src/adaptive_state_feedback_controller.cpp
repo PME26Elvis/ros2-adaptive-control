@@ -1,4 +1,6 @@
 // Copyright 2025
+#include <limits>  // for std::numeric_limits
+#include <realtime_tools/realtime_publisher.hpp>  // 確保用到新 API
 #include "adaptive_controllers/adaptive_state_feedback_controller.hpp"
 
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
