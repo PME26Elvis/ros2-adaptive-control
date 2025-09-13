@@ -16,6 +16,7 @@ add_library(${PROJECT_NAME} SHARED
   src/adaptive_state_feedback_controller.cpp
   src/observers/luenberger_observer.cpp
   src/adaptive_laws/mrac_law.cpp
+  src/param_utils.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
