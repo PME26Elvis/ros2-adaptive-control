@@ -6,6 +6,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <realtime_tools/realtime_publisher.hpp>
+#include <realtime_tools/realtime_buffer.h>
 #include <Eigen/Dense>
 #include <std_msgs/msg/float64_multi_array.hpp>
 
