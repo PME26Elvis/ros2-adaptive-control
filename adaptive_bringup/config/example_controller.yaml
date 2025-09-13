@@ -5,26 +5,27 @@ controller_manager:
     adaptive_controller:
       type: adaptive_controllers/AdaptiveStateFeedbackController
 
-      # 多關節設定
       dof: 2
       joints: [joint0, joint1]
 
-      # 先關閉 plugin（CI/測試友善）；示範時可開啟
-      enable_plugins: false
-      observer_type: adaptive_controllers/LuenbergerObserver
-      adaptive_type: adaptive_controllers/MRACLaw
+      # 關掉插件可跑最小回授；要自適應就打開
+      enable_plugins: true
+      # 在 MRAC 與 L1 之間切換：
+      # adaptive_type: adaptive_controllers/MRACLaw
+      adaptive_type: adaptive_controllers/L1Law
 
-      # 不提供 A/B/C/K 時，控制器會自動使用 2nd-order canonical：
-      # A=[0 I; 0 0], B=[0; I], C=[I 0]，K 預設 0
-      # 若你要自定，可用 *_data（一維、row-major）給尺寸：
-      # A_data: [ ... size = (2n)*(2n) ... ]
-      # B_data: [ ... size = (2n)*n ... ]
-      # C_data: [ ... size = n*(2n) ... ]
-      # K_data: [ ... size = n*(2n) ... ]
+      # 不給 A/B/C/K 時，控制器會自動用 2nd-order canonical（A=[0 I;0 0], B=[0;I], C=[I 0]）
+      # 如需自定，使用 *_data 一維 row-major（尺寸依 dof 推算）
 
-      # 指令上下限
+      # 命令上下限（逐關節）
       u_min: [-10.0, -10.0]
       u_max: [ 10.0,  10.0]
 
       # 初始參考
       r0: [0.0, 0.0]
+
+      # MRAC/L1 參數（控制器會轉交給插件）
+      mrac.gamma: 5.0
+      mrac.sigma: 0.01
+      mrac.theta_max: 50.0
+      l1.alpha: 20.0
