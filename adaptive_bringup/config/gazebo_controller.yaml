@@ -1,0 +1,22 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 200
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    adaptive_controller:
+      type: adaptive_controllers/AdaptiveStateFeedbackController
+      dof: 1
+      joints: [joint0]
+
+      enable_plugins: true
+      adaptive_type: adaptive_controllers/MRACLaw
+      mrac.gamma: 5.0
+      mrac.sigma: 0.02
+      mrac.theta_max: 50.0
+
+      # 不提供 A/B/C/K 則用 2nd-order canonical；先限制一下努力
+      u_min: [-20.0]
+      u_max: [ 20.0]
+      r0: [0.0]
