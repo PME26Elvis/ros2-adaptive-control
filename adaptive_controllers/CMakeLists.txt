@@ -10,6 +10,7 @@ find_package(hardware_interface REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(std_msgs REQUIRED)
 
 include_directories(include)
 
@@ -32,6 +33,7 @@ ament_target_dependencies(${PROJECT_NAME}
   hardware_interface
   realtime_tools
   rcutils
+  std_msgs
 )
 
 # ---- plugin exports ----
