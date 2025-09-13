@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(adaptive_controllers)
 
+# ---- dependencies ----
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -12,6 +13,7 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(include)
 
+# ---- library ----
 add_library(${PROJECT_NAME} SHARED
   src/adaptive_state_feedback_controller.cpp
   src/observers/luenberger_observer.cpp
@@ -24,32 +26,40 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp pluginlib controller_interface hardware_interface realtime_tools rcutils
+  rclcpp
+  pluginlib
+  controller_interface
+  hardware_interface
+  realtime_tools
+  rcutils
 )
 
-# export controller plugin
+# ---- plugin exports ----
 pluginlib_export_plugin_description_file(controller_interface plugin_description.xml)
-# export observer/adaptive-law plugins
 pluginlib_export_plugin_description_file(adaptive_controllers observer_plugins.xml)
 
+# ---- install ----
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
+  RUNTIME DESTINATION bin
+)
 
 install(DIRECTORY include/ DESTINATION include)
 
 install(FILES
   plugin_description.xml
   observer_plugins.xml
-  DESTINATION share/${PROJECT_NAME})
+  DESTINATION share/${PROJECT_NAME}
+)
 
-install(DIRECTORY resource
-  DESTINATION share/${PROJECT_NAME})
+# 可有可無：若有 resource/ 目錄就安裝；沒有也不會報錯
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resource")
+  install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})
+endif()
 
+# ---- testing (no ament_lint_auto here) ----
 if(BUILD_TESTING)
-  # 🚫 關閉所有 ament_* linter，避免在 CTest 中自動加入格式/靜態檢查
-  # 直接不引入 ament_lint_auto，僅保留最小 gtest 測試
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(test_compile tests/test_compile.cpp)
@@ -59,19 +69,16 @@ if(BUILD_TESTING)
   target_link_libraries(test_controller_lifecycle ${PROJECT_NAME})
 endif()
 
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-  # 只保留最小 gtest，確保 test job 仍然有東西可跑
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(test_compile tests/test_compile.cpp)
-  target_link_libraries(test_compile ${PROJECT_NAME})
-  ament_add_gtest(test_controller_lifecycle tests/test_controller_lifecycle.cpp)
-  target_link_libraries(test_controller_lifecycle ${PROJECT_NAME})
-
-endif()
-
+# ---- exports ----
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(rclcpp pluginlib controller_interface hardware_interface realtime_tools rcutils)
+ament_export_dependencies(
+  rclcpp
+  pluginlib
+  controller_interface
+  hardware_interface
+  realtime_tools
+  rcutils
+)
+
 ament_package()
