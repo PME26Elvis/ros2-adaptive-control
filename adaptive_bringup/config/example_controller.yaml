@@ -1,8 +1,20 @@
 controller_manager:
   ros__parameters:
     update_rate: 100
+
     adaptive_controller:
       type: adaptive_controllers/AdaptiveStateFeedbackController
+
+      # 基本設定
       dof: 1
+      enable_plugins: false               # 測試時先關；要載入 plugin 再改成 true
       observer_type: adaptive_controllers/LuenbergerObserver
       adaptive_type: adaptive_controllers/MRACLaw
+
+      # 1-DOF 狀態空間：x=[pos], u=[effort], y=[pos]
+      # A, B, C, K 皆為 row-major 的 1D 向量（_data），尺寸由 dof 決定（這裡是 1x1）
+      A_data: [0.0]
+      B_data: [1.0]
+      C_data: [1.0]
+      # K 可先為 0，之後你可以用極點配置/LQR 結果填入
+      K_data: [0.0]
