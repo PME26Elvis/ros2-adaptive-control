@@ -5,7 +5,7 @@
 #include <hardware_interface/loaned_command_interface.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <realtime_tools/realtime_publisher.h>
+#include <realtime_tools/realtime_publisher.hpp>
 #include <Eigen/Dense>
 #include <std_msgs/msg/float64_multi_array.hpp>
 
