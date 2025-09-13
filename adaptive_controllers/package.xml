@@ -14,8 +14,6 @@
   <depend>rcutils</depend>
   <depend>eigen3_cmake_module</depend>
   <exec_depend>ament_index_cpp</exec_depend>
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
   <test_depend>gtest</test_depend>
   <export>
     <pluginlib plugin_manifest="plugin_description.xml"/>
