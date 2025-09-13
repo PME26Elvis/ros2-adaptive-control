@@ -10,4 +10,10 @@
          base_class_type="adaptive_controllers::AdaptiveLawBase">
     <description>Model Reference Adaptive Control law.</description>
   </class>
+  
+  <class name="adaptive_controllers/L1Law"
+         type="adaptive_controllers::L1Law"
+         base_class_type="adaptive_controllers::AdaptiveLawBase">
+    <description>L1 adaptive law with simple first-order filter</description>
+  </class>
 </library>
