@@ -1,9 +1,10 @@
-// Copyright 2025 
+// Copyright 2025
 #include "adaptive_controllers/adaptive_state_feedback_controller.hpp"
 
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include "adaptive_controllers/param_utils.hpp"
 
 using controller_interface::InterfaceConfiguration;
 using controller_interface::ControllerInterface;
@@ -11,11 +12,12 @@ using controller_interface::return_type;
 using hardware_interface::HW_IF_EFFORT;
 using hardware_interface::HW_IF_POSITION;
 using hardware_interface::HW_IF_VELOCITY;
+using adaptive_controllers::param_utils::read_matrix;
+using adaptive_controllers::param_utils::read_vector;
 
 namespace adaptive_controllers {
 
 controller_interface::CallbackReturn AdaptiveStateFeedbackController::on_init() {
-  // 不在 on_init 建立 ClassLoader，避免 build 空間無 ament 索引時丟例外
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -23,11 +25,10 @@ controller_interface::CallbackReturn
 AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
   auto node = get_node();
 
-  // 參數：為了避免 ParameterValue(unsigned long) 歧義，用 int
+  // 參數宣告（Humble: 用 int 避免 unsigned long 歧義）
   node->declare_parameter<int>("dof", 1);
   node->declare_parameter<std::string>("observer_type", "adaptive_controllers/LuenbergerObserver");
   node->declare_parameter<std::string>("adaptive_type", "adaptive_controllers/MRACLaw");
-  // 關鍵：預設不載入 plugin，測試環境不觸發 pluginlib
   node->declare_parameter<bool>("enable_plugins", false);
 
   const int dof_param = node->get_parameter("dof").as_int();
@@ -37,7 +38,7 @@ AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
   adaptive_type_ = node->get_parameter("adaptive_type").as_string();
   enable_plugins_ = node->get_parameter("enable_plugins").as_bool();
 
-  // Minimal placeholders
+  // 預設值
   A_.setZero(dof_, dof_);
   B_.setIdentity(dof_, dof_);
   C_.setIdentity(dof_, dof_);
@@ -47,11 +48,20 @@ AdaptiveStateFeedbackController::on_configure(const rclcpp_lifecycle::State&) {
   y_.setZero(dof_);
   r_.setZero(dof_);
 
+  // 讀參數（可選）
+  bool okA = read_matrix(node, "A", dof_, dof_, A_);
+  bool okB = read_matrix(node, "B", dof_, dof_, B_);
+  bool okC = read_matrix(node, "C", dof_, dof_, C_);
+  bool okK = read_matrix(node, "K", dof_, dof_, K_);
+  if (!okA) RCLCPP_INFO(node->get_logger(), "[param] A not set, using zero(%zu,%zu)", dof_, dof_);
+  if (!okB) RCLCPP_INFO(node->get_logger(), "[param] B not set, using I(%zu)", dof_);
+  if (!okC) RCLCPP_INFO(node->get_logger(), "[param] C not set, using I(%zu)", dof_);
+  if (!okK) RCLCPP_INFO(node->get_logger(), "[param] K not set, using zero(%zu,%zu)", dof_, dof_);
+
   observer_.reset();
   adapt_.reset();
 
   if (enable_plugins_) {
-    // 只有在 enable_plugins_=true 才嘗試載入，避免在 build 空間找不到套件而丟例外
     try {
       pluginlib::ClassLoader<ObserverBase> observer_loader(
           "adaptive_controllers", "adaptive_controllers::ObserverBase");
@@ -129,11 +139,11 @@ return_type AdaptiveStateFeedbackController::update(const rclcpp::Time&, const r
     return return_type::OK;
   }
 
-  // Minimal 1-DOF placeholder wiring (extend for multi-DOF later)
+  // Minimal 1-DOF placeholder wiring（後續會擴充多 DOF）
   for (std::size_t i = 0; i < dof_; ++i) {
     const double pos = state_ifaces_[2 * i].get_value();
     const double vel = state_ifaces_[2 * i + 1].get_value();
-    (void)vel; // not used yet
+    (void)vel;
     x_[0] = pos;
     y_[0] = pos;
   }
