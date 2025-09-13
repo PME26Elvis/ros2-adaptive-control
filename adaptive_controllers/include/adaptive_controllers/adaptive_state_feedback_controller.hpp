@@ -36,15 +36,15 @@ private:
 
   // State-space matrices and signals
   Eigen::MatrixXd A_, B_, C_, K_;
-  Eigen::VectorXd x_, u_, y_, r_;          // plant states, control, output, reference
-  Eigen::VectorXd u_min_, u_max_;          // command limits (per joint)
+  Eigen::VectorXd x_, u_, y_, r_;
+  Eigen::VectorXd u_min_, u_max_;
 
-  // Reference input subscription (non-real-time → realtime buffer bridge)
+  // Reference input subscription (non-RT → RT bridge)
   using RefMsg = std_msgs::msg::Float64MultiArray;
   rclcpp::Subscription<RefMsg>::SharedPtr ref_sub_;
   realtime_tools::RealtimeBuffer<Eigen::VectorXd> ref_rt_;
 
-  // Plugins (only if enabled through parameter)
+  // Plugins
   bool enable_plugins_{false};
   std::string observer_type_;
   std::string adaptive_type_;
@@ -54,6 +54,19 @@ private:
   // Helpers
   void declare_common_parameters(const rclcpp_lifecycle::LifecycleNode::SharedPtr& node);
   void setup_reference_subscription(const rclcpp_lifecycle::LifecycleNode::SharedPtr& node);
+
+  // Safe helpers that tolerate "not configured yet"
+  inline std::string joint_name_safe(std::size_t i) const {
+    if (i < joint_names_.size()) return joint_names_[i];
+    return "joint" + std::to_string(i);
+  }
+  inline bool sized_ok() const {
+    return (dof_ > 0) &&
+           (x_.size() == static_cast<Eigen::Index>(dof_)) &&
+           (y_.size() == static_cast<Eigen::Index>(dof_)) &&
+           (u_.size() == static_cast<Eigen::Index>(dof_)) &&
+           (r_.size() == static_cast<Eigen::Index>(dof_));
+  }
   Eigen::VectorXd clamp(const Eigen::VectorXd& v,
                         const Eigen::VectorXd& vmin,
                         const Eigen::VectorXd& vmax) const;
