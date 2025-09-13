@@ -5,16 +5,24 @@ controller_manager:
     adaptive_controller:
       type: adaptive_controllers/AdaptiveStateFeedbackController
 
-      # 基本設定
+      # 多關節設定（可改）
       dof: 1
-      enable_plugins: false               # 測試時先關；要載入 plugin 再改成 true
+      joints: [joint0]
+
+      # 啟用/停用 plugin 載入（CI/測試建議先 false）
+      enable_plugins: false
       observer_type: adaptive_controllers/LuenbergerObserver
       adaptive_type: adaptive_controllers/MRACLaw
 
-      # 1-DOF 狀態空間：x=[pos], u=[effort], y=[pos]
-      # A, B, C, K 皆為 row-major 的 1D 向量（_data），尺寸由 dof 決定（這裡是 1x1）
+      # A/B/C/K 皆以 row-major vector（*_data）提供，尺寸取決於 dof（此例 1x1）
       A_data: [0.0]
       B_data: [1.0]
       C_data: [1.0]
-      # K 可先為 0，之後你可以用極點配置/LQR 結果填入
       K_data: [0.0]
+
+      # 命令上下限（逐關節）
+      u_min: [-10.0]
+      u_max: [ 10.0]
+
+      # 初始參考
+      r0: [0.0]
