@@ -1,3 +1,4 @@
+// Copyright 2025
 #pragma once
 
 #include <controller_interface/controller_interface.hpp>
@@ -28,17 +29,16 @@ private:
   std::vector<hardware_interface::LoanedCommandInterface> cmd_ifaces_;
   std::vector<hardware_interface::LoanedStateInterface> state_ifaces_;
 
-  // Basic state-space matrices (placeholders for now)
+  // State-space matrices and signals
   Eigen::MatrixXd A_, B_, C_, K_;
   Eigen::VectorXd x_, u_, y_, r_;
 
-  // Plugins (only created if enable_plugins_ == true)
+  // Plugins (only if enabled through parameter)
   bool enable_plugins_{false};
   std::string observer_type_;
   std::string adaptive_type_;
   std::size_t dof_{1};
 
-  // plugin instances (created lazily when enabled)
   pluginlib::UniquePtr<ObserverBase> observer_;
   pluginlib::UniquePtr<AdaptiveLawBase> adapt_;
 };
